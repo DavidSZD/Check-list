@@ -209,7 +209,7 @@
         <div class="tag-filter-section">
             <h2>Filtrer par tags</h2>
             <div class="tag-filters" id="tag-filters">
-                <label for="tag-all">
+                <label for="tag-all" >
                     <input type="radio" id="tag-all" name="tag-filter" value="all" checked> Tous les tags
                 </label>
                 <!-- Les boutons de tags seront ajoutés ici par JavaScript -->
@@ -490,15 +490,16 @@
             }
 
             tagFiltersElement.innerHTML = `
-                <label for="tag-all" class="${selectedTagFilterRadio === null ? 'active' : ''}">
-                    <input type="radio" id="tag-all" name="tag-filter" value="all" ${selectedTagFilterRadio === null ? 'checked' : ''}> Tous les tags
+                <label for="tag-all" >
+                    <input type="radio" id="tag-all" name="tag-filter" value="all" checked> Tous les tags
                 </label>
             `;
 
             tags.forEach(tag => {
                 const label = document.createElement('label');
                 label.htmlFor = `tag-${tag}`;
-                label.innerHTML = `<input type="radio" id="tag-${tag}" name="tag-filter" value="${tag}" ${selectedTagFilterRadio === tag ? 'checked' : ''}> ${tag}`;
+                label.classList.toggle('active', selectedTagFilterRadio === tag); // Add 'active' class if tag is selected
+                label.innerHTML = `<input type="radio" id="tag-${tag}" name="tag-filter" value="${tag}" > ${tag}`;
                 tagFiltersElement.appendChild(label);
             });
 
@@ -512,15 +513,17 @@
                              radio.checked = false; // Deselect the radio
                              selectedTagFilterRadio = null; // Clear the selected tag
                              document.querySelector('#tag-all').checked = true; // Select "All Tags"
-                             updateActiveFilter('tag-filter'); // Update active class for filters
+                             updateActiveFilter('tag-filter');
                         } else {
                             selectedTagFilterRadio = radio.value; // Update selected tag
+                            document.querySelector('#tag-all').checked = false; // Deselect "All Tags" when a specific tag is selected
                         }
                     } else {
                         selectedTagFilterRadio = null; // Clear selected tag if deselected directly (though radio should not be deselected directly normally)
+                        document.querySelector('#tag-all').checked = true; // Ensure "All Tags" is checked when no tag is selected.
                     }
-                    document.querySelector('#tag-all').checked = (selectedTagFilterRadio === null || selectedTagFilterRadio === 'all'); // Ensure "All Tags" is checked when no tag is selected.
-                    updateActiveFilter('tag-filter'); // Update active class for filters after potentially changing "All Tags"
+
+                    updateActiveFilter('tag-filter');
                     displayChecklist(snapshotData);
                 });
             });
@@ -587,7 +590,7 @@
                     task47: { text: "Faire un nouveau un tour au boat house", checked: false, time: "12h15", tags: ["boat house", "tour"] },
                     task48: { text: "Faire un tour à la pâtisserie de la cuisine centrale (reprendre note sur l'avancement des desserts bien les connaître", checked: false, time: "12h15", tags: ["pâtisserie", "cuisine centrale", "desserts", "vérification"] },
                     task49: { text: "Mise en place de la synagogue", checked: false, time: "12h15", tags: ["synagogue", "mise en place"] },
-                    task50: { text: "voir avec richina sur le matériel qu'il a besoin pour les plats de shabbat ça peut être le bol à Bouillon ainsi que le bol à couscous les louches.", checked: false, time: "12h15", tags: ["Richina", "matériel", "shabbat", "plats", "synagogue"] },
+                    task50: { text: "voir avec richina sur le matériel qu'il a besoin pour les plats de shabbat ça peut être le bol à Bouillon ainsi que le bol à couscous les louches.", checked: false, time: "12h15", tags: ["Richna", "matériel", "shabbat", "plats", "synagogue"] },
                     task51: { text: "Sortir les vins de shabbat (voir avec David ) et sortir jus de raisin", checked: false, time: "12h15", tags: ["vins", "shabbat", "jus de raisin", "David"] },
                     task52: { text: "mettre la Bouha au congélateur", checked: false, time: "12h15", tags: ["Bouha", "congélateur"] },
                     task53: { text: "Voir avec Vanessa pour la décoration de bougies de Chabbat", checked: false, time: "12h15", tags: ["Vanessa", "décoration", "bougies", "shabbat"] },
@@ -655,7 +658,6 @@
                 displayChecklist(snapshotData);
             });
         });
-
 
 
          updateActiveFilter('filter');
