@@ -30,18 +30,36 @@
             border-radius: 5px;
         }
 
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .filter-section h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
         .filters {
             display: flex;
-            justify-content: space-around;
-            margin-bottom: 20px;
+            flex-wrap: wrap; /* Permet aux boutons de passer à la ligne si l'espace est insuffisant */
+            gap: 10px; /* Ajoute de l'espace entre les boutons */
+            justify-content: flex-start; /* Aligne les boutons au début */
         }
+
 
         .filters label {
             cursor: pointer;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 20px; /* Coins plus arrondis */
             background-color: #eee;
+            color: #333;
+            display: inline-block;
+            margin-bottom: 5px; /* Ajoute une marge en bas pour l'espacement vertical */
         }
 
         .filters label.active {
@@ -49,6 +67,12 @@
             color: white;
             border-color: #007bff;
         }
+
+        /* Cache l'input radio par défaut */
+        .filters input[type="radio"] {
+            display: none;
+        }
+
 
         ul {
             list-style-type: none;
@@ -100,8 +124,9 @@
     <h1>Checklist Partagée - Vendredi</h1>
 
     <div class="container">
-        <div class="filters">
-            <div>
+        <div class="filter-section">
+            <h2>État des tâches</h2>
+            <div class="filters">
                 <label for="filter-all">
                     <input type="radio" id="filter-all" name="filter" value="all" checked> Tous
                 </label>
@@ -112,7 +137,11 @@
                     <input type="radio" id="filter-pending" name="filter" value="pending"> À faire
                 </label>
             </div>
-            <div>
+        </div>
+
+        <div class="filter-section">
+            <h2>Horaires</h2>
+            <div class="filters">
                 <label for="time-all">
                     <input type="radio" id="time-all" name="time" value="all" checked> Tous les horaires
                 </label>
@@ -322,8 +351,8 @@
 
                     checkbox.addEventListener('change', () => {
                         // Met à jour Firebase quand la case est cochée/décochée
-                        //database.ref(`checklist/${key}/checked`).set(checkbox.checked); // A activer si vous utilisez firebase
-                        item.checked = checkbox.checked; // Mise à jour locale (sans Firebase pour l'instant)
+                        database.ref(`checklist/${key}/checked`).set(checkbox.checked); // A activer si vous utilisez firebase
+                        //item.checked = checkbox.checked; // Mise à jour locale (sans Firebase pour l'instant)
                     });
 
                     const label = document.createElement('label');
@@ -340,23 +369,23 @@
 
 
         // Écoute les changements dans la base de données et met à jour la checklist
-        // checklistRef.on('value', (snapshot) => {  // A activer si vous utilisez firebase
-        //     const data = snapshot.val();
-        //     if (data) {
-        //         displayChecklist(data);
-        //     } else {
-        //         // Si la checklist est vide dans Firebase, on ajoute quelques exemples
-        //         const initialData = {
-        //             item1: { text: "Faire les courses", checked: false },
-        //             item2: { text: "Répondre aux emails", checked: true },
-        //             item3: { text: "Préparer le dîner", checked: false }
-        //         };
-        //         checklistRef.set(initialData); // Ajoute les exemples à Firebase
-        //     }
-        // });
+        checklistRef.on('value', (snapshot) => {  // A activer si vous utilisez firebase
+            const data = snapshot.val();
+            if (data) {
+                displayChecklist(data);
+            } else {
+                // Si la checklist est vide dans Firebase, on ajoute quelques exemples
+                const initialData = {
+                    item1: { text: "Faire les courses", checked: false },
+                    item2: { text: "Répondre aux emails", checked: true },
+                    item3: { text: "Préparer le dîner", checked: false }
+                };
+                checklistRef.set(initialData); // Ajoute les exemples à Firebase
+            }
+        });
 
         // Initialisation (utilise la liste statique au lieu de Firebase pour l'instant)
-        displayChecklist(taskList);
+        //displayChecklist(taskList);
 
         // Gestion des filtres
         filterAll.addEventListener('change', () => displayChecklist(taskList));
@@ -383,6 +412,7 @@
                 }
             }
         }
+
 
         // Écoute les changements sur les radios de filtre pour mettre à jour la classe 'active'
         document.querySelectorAll('input[name="filter"]').forEach(radio => {
