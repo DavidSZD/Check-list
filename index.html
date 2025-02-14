@@ -355,24 +355,31 @@
 
 
         function displayChecklist(data) {
+            console.log("➡️➡️➡️ DÉBUT displayChecklist, data reçues :", data); // NOUVEAU LOG AU DÉBUT
             checklistElement.innerHTML = '';
             const filter = document.querySelector('input[name="filter"]:checked').value;
             const timeFilter = document.querySelector('input[name="time"]:checked').value;
             const searchTerm = searchInput.value.toLowerCase();
-            const tagFilter = document.querySelector('input[name="tag-filter"]:checked').value; // Récupère le tag filtre sélectionné
-
+            const tagFilter = document.querySelector('input[name="tag-filter"]:checked').value;
 
             console.log("Filtre d'état sélectionné:", filter);
             console.log("Filtre horaire sélectionné:", timeFilter);
             console.log("Terme de recherche:", searchTerm);
-            console.log("Filtre Tag sélectionné:", tagFilter); // Affiche le tag filtre sélectionné
+            console.log("Filtre Tag sélectionné:", tagFilter);
+
+            if (!data) { // ⚠️ AJOUTE CETTE VÉRIFICATION IMPORTANTE
+                console.log("⚠️⚠️⚠️ ATTENTION : Aucune donnée reçue dans displayChecklist ! Data est null ou undefined."); // NOUVEAU LOG SI DATA EST VIDE
+                checklistElement.innerHTML = '<p>Aucune tâche à afficher.</p>'; // Affiche un message si pas de données
+                return; // ⚠️ IMPORTANT : Arrête la fonction ici si pas de données
+            }
+
 
             for (const key in data) {
                 if (data.hasOwnProperty(key)) {
                     const item = data[key];
                     const taskTextLower = item.text.toLowerCase();
 
-                    console.log("Tâche:", key, item);
+                    console.log("Tâche:", key, item); // Laisse ce log, il est utile
 
                     // Filtrage par état (fait/à faire)
                     if (filter === 'done' && !item.checked) {
@@ -446,6 +453,7 @@
                     checklistElement.appendChild(listItem);
                 }
             }
+            console.log("⬅️⬅️⬅️ FIN displayChecklist"); // NOUVEAU LOG À LA FIN
         }
 
         // Fonction pour générer les boutons de tags
