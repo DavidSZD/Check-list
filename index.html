@@ -94,7 +94,7 @@
             border-bottom: 1px solid #eee;
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Aligne checkbox/label à gauche, tag button à droite */
+            justify-content: space-between; /* Aligne les éléments à chaque extrémité */
         }
 
         li:last-child {
@@ -109,26 +109,48 @@
             flex-grow: 1;
         }
 
-        li button.tag-button {
-            background: none;
+        li .tags-container {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        li .tag {
+            background-color: #ddd;
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+
+        li .add-tag-button, li .save-tag-button {
+            background-color: #007bff;
+            color: white;
             border: none;
-            cursor: pointer;
-            color: #007bff;
-            font-size: 0.9em;
             padding: 5px 10px;
             border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        li button.tag-button:hover {
-            background-color: #e0f7fa; /* Light hover background */
-        }
-
-        li .task-tags {
-            margin-left: 10px;
+            cursor: pointer;
             font-size: 0.8em;
-            color: #777;
+            margin-left: 5px;
         }
+
+        li .add-tag-button:hover, li .save-tag-button:hover {
+            background-color: #0056b3;
+        }
+
+        li .tag-input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.8em;
+            width: 80px; /* Ajustez la largeur selon vos besoins */
+            margin-left: 5px;
+        }
+
+        li .tag-input.hidden {
+            display: none;
+        }
+
 
         .hidden {
             display: none;
@@ -159,55 +181,6 @@
                 margin-right: 0;
             }
         }
-
-        /* Modal styles (optional, for tag input) */
-        .tag-modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        }
-
-        .tag-modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-            border-radius: 5px;
-        }
-
-        .tag-modal-content input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .tag-modal-content button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .tag-modal-content button.save-tag {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .tag-modal-content button.cancel-tag {
-            background-color: #ccc;
-            color: white;
-            margin-left: 10px;
-        }
-
     </style>
 </head>
 <body>
@@ -274,17 +247,6 @@
         </ul>
     </div>
 
-    <!-- The Modal for Tag Input -->
-    <div id="tagInputModal" class="tag-modal">
-        <div class="tag-modal-content">
-            <span class="close-button">×</span>
-            <input type="text" id="tagInputText" placeholder="Entrez un tag">
-            <button class="save-tag" id="saveTagButton">Enregistrer</button>
-            <button class="cancel-tag" id="cancelTagButton">Annuler</button>
-        </div>
-    </div>
-
-
     <!-- Import Firebase SDK (compat pour faciliter la transition) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
@@ -319,7 +281,6 @@
         let app;
         let database;
         let checklistRef;
-        let snapshotData; // Stocke les données globales pour la fonction displayChecklist
 
         try {
             // Initialisation de Firebase
@@ -345,17 +306,8 @@
         const searchInput = document.getElementById('search-task');
         const tagFiltersElement = document.getElementById('tag-filters');
 
-        const tagInputModal = document.getElementById('tagInputModal');
-        const tagInputText = document.getElementById('tagInputText');
-        const saveTagButton = document.getElementById('saveTagButton');
-        const cancelTagButton = document.getElementById('cancelTagButton');
-
-
-        let currentTaskKeyForTagging = null; // Variable pour stocker la clé de la tâche à tagger
-
 
         function displayChecklist(data) {
-            console.log("➡️➡️➡️ DÉBUT displayChecklist, data reçues :", data); // NOUVEAU LOG AU DÉBUT
             checklistElement.innerHTML = '';
             const filter = document.querySelector('input[name="filter"]:checked').value;
             const timeFilter = document.querySelector('input[name="time"]:checked').value;
@@ -367,19 +319,12 @@
             console.log("Terme de recherche:", searchTerm);
             console.log("Filtre Tag sélectionné:", tagFilter);
 
-            if (!data) { // ⚠️ AJOUTE CETTE VÉRIFICATION IMPORTANTE
-                console.log("⚠️⚠️⚠️ ATTENTION : Aucune donnée reçue dans displayChecklist ! Data est null ou undefined."); // NOUVEAU LOG SI DATA EST VIDE
-                checklistElement.innerHTML = '<p>Aucune tâche à afficher.</p>'; // Affiche un message si pas de données
-                return; // ⚠️ IMPORTANT : Arrête la fonction ici si pas de données
-            }
-
-
             for (const key in data) {
                 if (data.hasOwnProperty(key)) {
                     const item = data[key];
                     const taskTextLower = item.text.toLowerCase();
 
-                    console.log("Tâche:", key, item); // Laisse ce log, il est utile
+                    console.log("Tâche:", key, item);
 
                     // Filtrage par état (fait/à faire)
                     if (filter === 'done' && !item.checked) {
@@ -405,7 +350,7 @@
 
                     // Filtrage par tag
                     if (tagFilter !== 'all') {
-                        if (!item.tags || !item.tags.includes(tagFilter)) { // Vérifie si la tâche a des tags et si le tag sélectionné est parmi eux
+                        if (!item.tags || !item.tags.includes(tagFilter)) {
                             console.log("Filtrage - Tag incorrect, filtre tag actif. Masquer:", key);
                             continue;
                         }
@@ -426,39 +371,71 @@
                     label.htmlFor = key;
                     label.textContent = fixCharacters(item.text);
 
-                    const tagButton = document.createElement('button');
-                    tagButton.classList.add('tag-button');
-                    tagButton.textContent = 'Tag';
-                    tagButton.addEventListener('click', () => {
-                        currentTaskKeyForTagging = key; // Stocke la clé de la tâche actuelle
-                        tagInputModal.style.display = "block"; // Affiche le modal
-                        tagInputText.value = ""; // Réinitialise le champ de texte
-                        tagInputText.focus(); // Focus sur l'input
+                    const tagsContainer = document.createElement('div');
+                    tagsContainer.classList.add('tags-container');
+                    if (item.tags) {
+                        item.tags.forEach(tag => {
+                            const tagElement = document.createElement('span');
+                            tagElement.classList.add('tag');
+                            tagElement.textContent = tag;
+                            tagsContainer.appendChild(tagElement);
+                        });
+                    }
+
+                    const addTagButton = document.createElement('button');
+                    addTagButton.classList.add('add-tag-button');
+                    addTagButton.textContent = 'Taguer';
+                    const tagInput = document.createElement('input');
+                    tagInput.type = 'text';
+                    tagInput.classList.add('tag-input', 'hidden');
+                    const saveTagButton = document.createElement('button');
+                    saveTagButton.classList.add('save-tag-button', 'hidden');
+                    saveTagButton.textContent = 'Sauvegarder';
+
+                    addTagButton.addEventListener('click', () => {
+                        tagInput.classList.remove('hidden');
+                        saveTagButton.classList.remove('hidden');
+                        addTagButton.classList.add('hidden');
+                        tagInput.focus();
                     });
 
-                    const taskTagsSpan = document.createElement('span');
-                    taskTagsSpan.classList.add('task-tags');
-                    taskTagsSpan.textContent = item.tags ? item.tags.join(', ') : ''; // Affiche les tags s'il y en a
+                    saveTagButton.addEventListener('click', () => {
+                        const tagValue = tagInput.value.trim();
+                        if (tagValue) {
+                            const currentTags = item.tags || [];
+                            const updatedTags = [...currentTags, tagValue]; // Ajoute le nouveau tag
+                            database.ref(`checklist/${key}/tags`).set(updatedTags)
+                                .then(() => {
+                                    tagInput.value = '';
+                                    tagInput.classList.add('hidden');
+                                    saveTagButton.classList.add('hidden');
+                                    addTagButton.classList.remove('hidden');
+                                })
+                                .catch(error => console.error("Erreur lors de la sauvegarde du tag:", error));
+                        } else {
+                            tagInput.classList.add('hidden');
+                            saveTagButton.classList.add('hidden');
+                            addTagButton.classList.remove('hidden');
+                        }
+                    });
 
-                    const taskContent = document.createElement('div'); // Div pour grouper checkbox et label à gauche
-                    taskContent.style.display = 'flex';
-                    taskContent.style.alignItems = 'center';
-                    taskContent.appendChild(checkbox);
-                    taskContent.appendChild(label);
+
+                    listItem.appendChild(checkbox);
+                    listItem.appendChild(label);
+                    listItem.appendChild(tagsContainer);
+                    listItem.appendChild(addTagButton);
+                    listItem.appendChild(tagInput);
+                    listItem.appendChild(saveTagButton);
 
 
-                    listItem.appendChild(taskContent);
-                    listItem.appendChild(taskTagsSpan); // Affiche les tags à côté du bouton Tag
-                    listItem.appendChild(tagButton); // Ajoute le bouton Tag à droite
                     checklistElement.appendChild(listItem);
                 }
             }
-            console.log("⬅️⬅️⬅️ FIN displayChecklist"); // NOUVEAU LOG À LA FIN
         }
 
         // Fonction pour générer les boutons de tags
         function generateTagFilters(data) {
-            const tags = new Set(); // Utilise un Set pour obtenir des tags uniques
+            const tags = new Set();
             for (const key in data) {
                 if (data.hasOwnProperty(key) && data[key].tags) {
                     data[key].tags.forEach(tag => tags.add(tag));
@@ -469,7 +446,7 @@
                 <label for="tag-all">
                     <input type="radio" id="tag-all" name="tag-filter" value="all" checked> Tous les tags
                 </label>
-            `; // Réinitialise et ajoute le bouton "Tous les tags"
+            `;
 
             tags.forEach(tag => {
                 const label = document.createElement('label');
@@ -478,22 +455,23 @@
                 tagFiltersElement.appendChild(label);
             });
 
-             // Ajoute les event listeners pour les nouveaux boutons de tag
+             // Ajoute les event listeners pour les nouveaux boutons de tag (après régénération des boutons)
             document.querySelectorAll('input[name="tag-filter"]').forEach(radio => {
                 radio.addEventListener('change', () => {
                     updateActiveFilter('tag-filter');
-                    displayChecklist(snapshotData); // Réaffiche la checklist après changement de filtre tag
+                    displayChecklist(snapshotData);
                 });
             });
+             updateActiveFilter('tag-filter'); // Met à jour la classe active après la génération
         }
 
 
         // Écoute les changements dans la base de données et met à jour la checklist
         checklistRef.on('value', (snapshot) => {
-            snapshotData = snapshot.val(); // Stockage du snapshot dans la portée extérieure
+            snapshotData = snapshot.val();
             if (snapshotData) {
                 displayChecklist(snapshotData);
-                generateTagFilters(snapshotData); // Génère les boutons de tag après avoir récupéré les données
+                generateTagFilters(snapshotData);
             } else {
                 // Si la checklist est vide dans Firebase, on ajoute la nouvelle liste (à commenter/supprimer après la première mise à jour)
                 /*
@@ -642,38 +620,6 @@
         // Écoute les changements dans la barre de recherche
         searchInput.addEventListener('input', () => {
             displayChecklist(snapshotData);
-        });
-
-
-        // Modal interaction
-        const closeModalButtons = document.querySelectorAll('.close-button, #cancelTagButton');
-        closeModalButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                tagInputModal.style.display = "none";
-            });
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target == tagInputModal) {
-                tagInputModal.style.display = "none";
-            }
-        });
-
-        saveTagButton.addEventListener('click', () => {
-            const tagText = tagInputText.value.trim();
-            if (tagText && currentTaskKeyForTagging) {
-                const tagArray = tagText.split(',').map(tag => tag.trim()).filter(tag => tag !== ''); // Permet d'ajouter plusieurs tags séparés par des virgules
-
-                checklistRef.child(currentTaskKeyForTagging).child('tags').set(tagArray).then(() => {
-                    tagInputModal.style.display = "none";
-                    currentTaskKeyForTagging = null; // Réinitialise la clé de tâche
-                }).catch(error => {
-                    console.error("Erreur lors de la sauvegarde du tag:", error);
-                    alert("Erreur lors de la sauvegarde du tag.");
-                });
-            } else {
-                alert("Veuillez entrer un tag.");
-            }
         });
 
 
