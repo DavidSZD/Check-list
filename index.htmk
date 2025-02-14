@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checklist Partagée</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Checklist Partagée</h1>
+    <ul id="checklist">
+        <!-- La checklist sera ajoutée ici par JavaScript -->
+    </ul>
+
+    <!-- Import Firebase SDK (compat pour faciliter la transition) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+
+    <script>
+        // Votre configuration Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyDMDWEaNGj2grS0qn5b5phspZuNNFBU4qA",
+          authDomain: "check-list-ebe53.firebaseapp.com",
+          projectId: "check-list-ebe53",
+          storageBucket: "check-list-ebe53.firebasestorage.app",
+          messagingSenderId: "254086418316",
+          appId: "1:254086418316:web:f5b8db7c20bf7dac5250a9",
+          measurementId: "G-10QYMZ6HZ1"
+        };
+
+        // Initialisation de Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const checklistRef = database.ref('checklist');  // Reference à l'emplacement 'checklist' dans la base de données
+
+        const checklistElement = document.getElementById('checklist');
+
+        // Fonction pour afficher la checklist
+        function displayChecklist(data) {
+            checklistElement.innerHTML = ''; // Vide la liste existante
+
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    const item = data[key];
+                    const listItem = document.createElement('li');
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = item.checked;
+                    checkbox.id = key; // Utilise la clé Firebase comme ID de la checkbox
+
+                    checkbox.addEventListener('change', () => {
+                        // Met à jour Firebase quand la case est cochée/décochée
+                        database.ref(`checklist/${key}/checked`).set(checkbox.checked);
+                    });
+
+                    const label = document.createElement('label');
+                    label.htmlFor = key; // Associe le label à la checkbox
+                    label.textContent = item.text;
+
+                    listItem.appendChild(checkbox);
+                    listItem.appendChild(label);
+                    checklistElement.appendChild(listItem);
+                }
+            }
+        }
+
+        // Écoute les changements dans la base de données et met à jour la checklist
+        checklistRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                displayChecklist(data);
+            } else {
+                // Si la checklist est vide dans Firebase, on ajoute quelques exemples
+                const initialData = {
+                    item1: { text: "Faire les courses", checked: false },
+                    item2: { text: "Répondre aux emails", checked: true },
+                    item3: { text: "Préparer le dîner", checked: false }
+                };
+                checklistRef.set(initialData); // Ajoute les exemples à Firebase
+            }
+        });
+    </script>
+</body>
+</html>
