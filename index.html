@@ -207,158 +207,39 @@
             // Initialisation de Firebase
             app = firebase.initializeApp(firebaseConfig);
             database = firebase.database();
-            checklistRef = database.ref('checklist');  // Reference à l'emplacement 'checklist' dans la base de données
+            checklistRef = database.ref('checklist');
         } catch (error) {
             console.error("Erreur lors de l'initialisation de Firebase:", error);
             alert("Erreur lors du chargement de Firebase. Veuillez vérifier la console.");
         }
 
-
         const checklistElement = document.getElementById('checklist');
-        const filterAll = document.getElementById('filter-all');
-        const filterDone = document.getElementById('filter-done');
-        const filterPending = document.getElementById('filter-pending');
 
-        const timeAll = document.getElementById('time-all');
-        const timeMorning = document.getElementById('time-morning');
-        const time8h = document.getElementById('time-8h');
-        const time10h45 = document.getElementById('time-10h45');
-        const time12h15 = document.getElementById('time-12h15');
-        const time15h = document.getElementById('time-15h');
-
-
-        // Liste de tâches (remplacez ceci par vos données Firebase)
-        const taskList = {
-            task1: { text: "s'assurer qu'il n'y ait jamais de cuisson à la boulangerie de nos produits en même temps que les leurs (dans le grand four)", checked: false, time: "morning" },
-            task2: { text: "Allumer le four pour les pains et viennoiserie", checked: false, time: "morning" },
-            task3: { text: "contrôler la provenance des légumes et la découpe (tomates, pommes de terre, legumes sautés.)", checked: false, time: "morning" },
-            task4: { text: "allumer le feu pour la cuisson des légumes du petit déjeuner", checked: false, time: "morning" },
-            task5: { text: "Contrôler bien la poêle et la pince qui va servir à la cuisson des omelettes", checked: false, time: "morning" },
-            task6: { text: "contrôler la découpe des petits ingrédients qui vont servir aux omelettes comme les oignons les champignon.... *(ceci doivent être coupés absolument avec un couteau de lait)*", checked: false, time: "morning" },
-            task7: { text: "s'assurer que la découpe des fromages se fait sur un endroit neutre avec notre couteau", checked: false, time: "morning" },
-            task8: { text: "s'assurer qu'il y a bien uniquement du lait chamour sur le buffet et pour les cafés", checked: false, time: "morning" },
-            task9: { text: "faire un tour du restaurant et vérifier la vaisselle (mais vous m'avez pas encore dit qu'est-ce que vous avez fixé pour les vaisselles les viandes)", checked: false, time: "morning" },
-            task10: { text: "également ouvrir les armoires et les tiroir des meubles et s'assurer qu'il n'y a pas d'autre vaisselle non cacher à proximité pourrais prêter à confusion (et être sortie pendant le service sans faire exprès)", checked: false, time: "morning" },
-            task11: { text: "commencer à casser les œeufs (nettoyer et tout jeter après avoir fini)", checked: false, time: "morning" },
-            task12: { text: "vérifier que la machine et les filtres sont propres pour la vaisselle", checked: false, time: "morning" },
-            task13: { text: "faire un tour du buffet du petit-déjeuner prêter attention à tout produit", checked: false, time: "morning" },
-            task14: { text: "Valider les céréales et les granola si ils en sortent", checked: false, time: "morning" },
-            task15: { text: "s'assurer que les jus de fruits ne sont pas des jus CERET", checked: false, time: "morning" },
-            task16: { text: "allumer le grand four ainsi que la crêpière et les gaufres", checked: false, time: "morning" },
-            task17: { text: "allumer le feu pour les omelettes (rappeler à la dame des omelettes que si il s'éteint seul vous deviez le rallumer)", checked: false, time: "morning" },
-            task18: { text: "préciser à la dame des omelettes que si un client demande un ceuf au plat spécial sans blanc ou autre.. et qu'elle souhaite sortir un ceuf que c'est bien seulement vous qui pouviez le vérifier!", checked: false, time: "morning" },
-            task19: { text: "S'assurer qu'ils ont bien changé le lait du réservoir de machine à café", checked: false, time: "morning" },
-
-            task20: { text: "Passer à la cuisine de froid faire le point total de tout le menu des salades de shabbat avec Raya et s'assurer qu'il les cuit bien dans sa cuisine ou au boat house (attention à la différence entre les éléments de cuisson à faire sauter et se faire griller au four)", checked: false, time: "8h" },
-            task21: { text: "Raya peut avoir besoin aussi bien de pâtes pommes de terre bouillie ainsi que toutes sortes de légumes sautées grillé au four il a également besoin parfois de petits croûtons de pain ainsi que du pain de mie ou des mini Pitot", checked: false, time: "8h" },
-            task22: { text: "Raya a également la responsabilité de faire griller les pains pour le cocktail de chabat *faire bien attention qu'il emploie uniquement nos baguettes et dans notre timing de four*", checked: false, time: "8h" },
-            task23: { text: "Après avoir passé de kemias se renseigner sur le buffet du lendemain midi", checked: false, time: "8h" },
-            task24: { text: "Jeter un coup d'ceil sur les produits utilisés dans la cuisine froide", checked: false, time: "8h" },
-            task25: { text: "jeter un coup d'œeil rapidement sur les couteaux", checked: false, time: "8h" },
-            task26: { text: "faire un point avec Raya sur les salades cuisinées qu'il souhaite mettre sur le buffet", checked: false, time: "8h" },
-            task27: { text: "Fair un tour au boat house -> allumer le feux", checked: false, time: "8h" },
-            task28: { text: "Interroger charma sur le menu de midiet voir avec Vanessa celui du soir", checked: false, time: "8h" },
-            task29: { text: "Un tour des produits vite fait", checked: false, time: "8h" },
-            task30: { text: "Un tour des viandes au congélateur", checked: false, time: "8h" },
-            task31: { text: "Interroger le chef pâtissier si tout va bien et si il a besoin qu'on lui valide un produit", checked: false, time: "8h" },
-            task32: { text: "Interroger le pâtissier sur les mises en place anticipées dans la chambre froide", checked: false, time: "8h" },
-            task33: { text: "Interroger également le patissier sur les desserts de samedi soir -> tout doit être produit vendredi", checked: false, time: "8h" },
-            task34: { text: "passer avec sanjai à la poissonnerie pour valider les poissons de chabat, les salades du buffet, le cocktail et le BBQ du samedi soir", checked: false, time: "8h" },
-            task35: { text: "rappeler à la dame qui fait des crêpes qu'elle doit en faire quelques-unes pour shabbat idem pour les gaufres et voir avec David pour les omelettes", checked: false, time: "8h" },
-            task36: { text: "normalement si il reste des légumes au petit-déjeuner on devrait les ressortir pour le lendemain sinon il faut les préparer sur place à l'extérieur avant de finaliser le petit déjeuner", checked: false, time: "8h" },
-            task37: { text: "interroger après le petit-déjeuner où se trouve la poêle les pinces de lait (ceci doivent être mis de côté et *pas rapportées à la cuisine*)", checked: false, time: "8h" },
-            task38: { text: "Faire attention à la préparation du poisson gravelax du samedi matin (ou il est coupé et préparé)", checked: false, time: "8h" },
-
-            task39: { text: "Voir avec le boulanger à quel moment il souhaite faire les Halot (normalement autour de 13h)", checked: false, time: "10h45" },
-            task40: { text: "Tour au boat house", checked: false, time: "10h45" },
-            task41: { text: "vérifier toutes les salades vertes du jour et de chabat midi et samedi soir", checked: false, time: "10h45" },
-            task42: { text: "Se renseigner combien d'invités arrivent le jour même et faire envoyer avec le room service une chaussure en chocolat avec un petit mot qui informe que c'est cacher", checked: false, time: "10h45" },
-            task43: { text: "allumer le barbecue au déjeuner", checked: false, time: "10h45" },
-            task44: { text: "Passer au boat house et marquer tous les plats qui s'apprêtent à partir au buffet", checked: false, time: "10h45" },
-            task45: { text: "Voir avec Vanessa si elle a besoin de date ou autre pour la cuisson", checked: false, time: "10h45" },
-
-            task46: { text: "Allumer la machine à crêpes pour gouter et vérifier les jus (aucun de la marque CERET n'est cacher)", checked: false, time: "12h15" },
-            task47: { text: "Faire un nouveau un tour au boat house", checked: false, time: "12h15" },
-            task48: { text: "Faire un tour à la pâtisserie de la cuisine centrale (reprendre note sur l'avancement des desserts bien les connaître", checked: false, time: "12h15" },
-            task49: { text: "Mise en place de la synagogue", checked: false, time: "12h15" },
-            task50: { text: "voir avec richina sur le matériel qu'il a besoin pour les plats de shabbat ça peut être le bol à Bouillon ainsi que le bol à couscous les louches.", checked: false, time: "12h15" },
-            task51: { text: "Sortir les vins de shabbat (voir avec David ) et sortir jus de raisin", checked: false, time: "12h15" },
-            task52: { text: "mettre la Bouha au congélateur", checked: false, time: "12h15" },
-            task53: { text: "Voir avec Vanessa pour la décoration de bougies de Chabbat", checked: false, time: "12h15" },
-            task54: { text: "anticiper et mettre une petite boîte d'allumettes de côté dans larmoir du sefer tora pour allumer la bougie de la havdala", checked: false, time: "12h15" },
-            task55: { text: "vérifier la listd des pains du lendemain et demander le timing de production", checked: false, time: "12h15" },
-            task56: { text: "S'assurer qu'on a du café en poudre", checked: false, time: "12h15" },
-            task57: { text: "demander à Shanghai de l'eau bouillante a disposition -> Koumkoum--> vendredi soir derrière la salle - samedi matin au petit-déjeuner -et samedi midi à côté de la syna", checked: false, time: "12h15" },
-            task58: { text: "Voir avec Raya les bols qu'il va utiliser pour la kemia", checked: false, time: "12h15" },
-            task59: { text: "Contrôler aluminium et papier sur les plaques de cuisson de la boulangerie( rappeler aux équipes de ne pas mélanger les cuissons dans le four)", checked: false, time: "12h15" },
-            task60: { text: "Faire un tour chambre chocolat ou il prépare aussi quelques de nos desserts", checked: false, time: "12h15" },
-            task61: { text: "Faire un tour derrière La syna pour s'assurer que notre vaisselle de midi a bien été rangés dans notre storage (petit décompte à vue d'œeil serait idéal)", checked: false, time: "12h15" },
-
-            task62: { text: "Tour général au boat house: proposer aide, verif menus", checked: false, time: "15h" },
-            task63: { text: "cacheriser une armoire chauffante pour garder les plats chauds (très rapidement avec le chalumeau attention en résistance derrière les paroi en aluminium et les caoutchouc)", checked: false, time: "15h" },
-            task64: { text: "voir avec Shanghai où est-ce qu'il va brancher le Plata (en général dans son bureau )", checked: false, time: "15h" },
-            task65: { text: "passer et repasser et repasser chez Raya avec la liste du menu de la kemia et faire valider au fur et à mesure", checked: false, time: "15h" },
-            task66: { text: "demander la liste des desserts du lendemain", checked: false, time: "15h" },
-            task67: { text: "interroger le pâtissier si certaines mises en place ont déja été faite et où se trouve-t-elle", checked: false, time: "15h" },
-            task68: { text: "Passer a nouveau dans la cuisine du froid (produit, couteau ,nouveauté...)", checked: false, time: "15h" },
-            task69: { text: "Voir timings a quand est-ce qu'il est prévu de produire le reste des desserts", checked: false, time: "15h" },
-            task70: { text: "interroger le room service pour s'assurer qu'ils ont bien envoyé les chaussures en chocolat dans les chambres", checked: false, time: "15h" },
-            task71: { text: "Petit coup d'oeil dans le four boulanger *(tout les heur si possible)", checked: false, time: "15h" },
-            task72: { text: "Faire un tour dans la production de sushi que tout se déroule bien dans nos ustensiles", checked: false, time: "15h" },
-            task73: { text: "Casser des ceufs pour la pâte a crêpes a la pâtisserie centrale Pour dimanche matin", checked: false, time: "15h" },
-            task74: { text: "revoir avec le pâtissier sur le menu de chaque dessert et les ingrédients (il se peut qu'il y ait de temps a autre que nouveauté)", checked: false, time: "15h" },
-            task75: { text: "attention à l'occasion -> ne pas hésiter de rendre visite à la pâtisserie non kacher pour voir les productions qu'il mette en place (il se peut que parfois il termine sur notre buffet avec ou sans faire exprès)( surtout qu'ils ont que une journée pour préparer les desserts de midi vendredi soir samedi midi et samedi soir (..)", checked: false, time: "15h" },
-            task76: { text: "Vérifier de temps a autre il n'est pas de cuisson faite sans que le four ait été allumé", checked: false, time: "15h" },
-            task77: { text: "Faire un tour à la cuisine du froid pour la mise en place des dernières salades du soir", checked: false, time: "15h" },
-            task78: { text: "Contrôler la mise en place du dîner: les couverts - les assiettes de dessert, des tasses à café, des petites cuillères, boisson fraîche qui vont être servi, les plats de salade, les pinces et le matériel de service qui va être utilisé dans le couloir, les soupières pour le couscous et pour la sauce, les louches ou cuillère qui vont être utilisées, les salières autorisées pour shabbat, et tout ce que je me rappelle pas qu'il faut faire attention", checked: false, time: "15h" },
-            task79: { text: "Rallumer po", checked: false, time: "15h" },
-            task80: { text: "vérifier que les gastro et le matériel de cuisine sont marqués de rouge", checked: false, time: "15h" },
-            task81: { text: "Attention des fois ils peuvent avoir besoin de mini casseroles ou couteaux à la dernière minute -> a recup à la cuisine centrale", checked: false, time: "15h" },
-            task82: { text: "interroger Richna sur le lieu exact ou sera fait la vaisselle", checked: false, time: "15h" },
-            task83: { text: "Après le repas bien ramasser une bouteille de vin ouverte et de prendre avec vous les non mevouchal)", checked: false, time: "15h" },
-
-        };
-
-
-        // Fonction pour afficher la checklist
         function displayChecklist(data) {
-            checklistElement.innerHTML = ''; // Vide la liste existante
-
+            checklistElement.innerHTML = '';
             const filter = document.querySelector('input[name="filter"]:checked').value;
             const timeFilter = document.querySelector('input[name="time"]:checked').value;
-
 
             for (const key in data) {
                 if (data.hasOwnProperty(key)) {
                     const item = data[key];
-
-                    // Filtrage par état (fait/à faire)
                     if (filter === 'done' && !item.checked) continue;
                     if (filter === 'pending' && item.checked) continue;
-
-                    // Filtrage par horaire
                     if (timeFilter !== 'all' && item.time !== timeFilter) continue;
 
-
                     const listItem = document.createElement('li');
-                    listItem.classList.add('task-item');
-                    listItem.dataset.time = item.time; // Ajoute un attribut data pour l'horaire
-
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.checked = item.checked;
-                    checkbox.id = key; // Utilise la clé Firebase comme ID de la checkbox
+                    checkbox.id = key;
 
                     checkbox.addEventListener('change', () => {
-                        // Met à jour Firebase quand la case est cochée/décochée
-                        database.ref(`checklist/${key}/checked`).set(checkbox.checked); // A activer si vous utilisez firebase
-                        //item.checked = checkbox.checked; // Mise à jour locale (sans Firebase pour l'instant)
+                        database.ref(`checklist/${key}/checked`).set(checkbox.checked);
                     });
 
                     const label = document.createElement('label');
-                    label.htmlFor = key; // Associe le label à la checkbox
-                    label.textContent = fixCharacters(item.text);  // Utilise la fonction fixCharacters
-                    //label.textContent = item.text;
+                    label.htmlFor = key;
+                    label.textContent = fixCharacters(item.text);
 
                     listItem.appendChild(checkbox);
                     listItem.appendChild(label);
@@ -367,40 +248,103 @@
             }
         }
 
-
         // Écoute les changements dans la base de données et met à jour la checklist
-        checklistRef.on('value', (snapshot) => {  // A activer si vous utilisez firebase
+        checklistRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 displayChecklist(data);
             } else {
-                // Si la checklist est vide dans Firebase, on ajoute quelques exemples
+                // Si la checklist est vide dans Firebase, on ajoute la nouvelle liste
                 const initialData = {
-                    item1: { text: "Faire les courses", checked: false },
-                    item2: { text: "Répondre aux emails", checked: true },
-                    item3: { text: "Préparer le dîner", checked: false }
+                    task1: { text: "s'assurer qu'il n'y ait jamais de cuisson à la boulangerie de nos produits en même temps que les leurs (dans le grand four)", checked: false, time: "morning" },
+                    task2: { text: "Allumer le four pour les pains et viennoiserie", checked: false, time: "morning" },
+                    task3: { text: "contrôler la provenance des légumes et la découpe (tomates, pommes de terre, legumes sautés.)", checked: false, time: "morning" },
+                    task4: { text: "allumer le feu pour la cuisson des légumes du petit déjeuner", checked: false, time: "morning" },
+                    task5: { text: "Contrôler bien la poêle et la pince qui va servir à la cuisson des omelettes", checked: false, time: "morning" },
+                    task6: { text: "contrôler la découpe des petits ingrédients qui vont servir aux omelettes comme les oignons les champignon.... *(ceci doivent être coupés absolument avec un couteau de lait)*", checked: false, time: "morning" },
+                    task7: { text: "s'assurer que la découpe des fromages se fait sur un endroit neutre avec notre couteau", checked: false, time: "morning" },
+                    task8: { text: "s'assurer qu'il y a bien uniquement du lait chamour sur le buffet et pour les cafés", checked: false, time: "morning" },
+                    task9: { text: "faire un tour du restaurant et vérifier la vaisselle (mais vous m'avez pas encore dit qu'est-ce que vous avez fixé pour les vaisselles les viandes)", checked: false, time: "morning" },
+                    task10: { text: "également ouvrir les armoires et les tiroir des meubles et s'assurer qu'il n'y a pas d'autre vaisselle non cacher à proximité pourrais prêter à confusion (et être sortie pendant le service sans faire exprès)", checked: false, time: "morning" },
+                    task11: { text: "commencer à casser les œeufs (nettoyer et tout jeter après avoir fini)", checked: false, time: "morning" },
+                    task12: { text: "vérifier que la machine et les filtres sont propres pour la vaisselle", checked: false, time: "morning" },
+                    task13: { text: "faire un tour du buffet du petit-déjeuner prêter attention à tout produit", checked: false, time: "morning" },
+                    task14: { text: "Valider les céréales et les granola si ils en sortent", checked: false, time: "morning" },
+                    task15: { text: "s'assurer que les jus de fruits ne sont pas des jus CERET", checked: false, time: "morning" },
+                    task16: { text: "allumer le grand four ainsi que la crêpière et les gaufres", checked: false, time: "morning" },
+                    task17: { text: "allumer le feu pour les omelettes (rappeler à la dame des omelettes que si il s'éteint seul vous deviez le rallumer)", checked: false, time: "morning" },
+                    task18: { text: "préciser à la dame des omelettes que si un client demande un ceuf au plat spécial sans blanc ou autre.. et qu'elle souhaite sortir un ceuf que c'est bien seulement vous qui pouviez le vérifier!", checked: false, time: "morning" },
+                    task19: { text: "S'assurer qu'ils ont bien changé le lait du réservoir de machine à café", checked: false, time: "morning" },
+                    task20: { text: "Passer à la cuisine de froid faire le point total de tout le menu des salades de shabbat avec Raya et s'assurer qu'il les cuit bien dans sa cuisine ou au boat house (attention à la différence entre les éléments de cuisson à faire sauter et se faire griller au four)", checked: false, time: "8h" },
+                    task21: { text: "Raya peut avoir besoin aussi bien de pâtes pommes de terre bouillie ainsi que toutes sortes de légumes sautées grillé au four il a également besoin parfois de petits croûtons de pain ainsi que du pain de mie ou des mini Pitot", checked: false, time: "8h" },
+                    task22: { text: "Raya a également la responsabilité de faire griller les pains pour le cocktail de chabat *faire bien attention qu'il emploie uniquement nos baguettes et dans notre timing de four*", checked: false, time: "8h" },
+                    task23: { text: "Après avoir passé de kemias se renseigner sur le buffet du lendemain midi", checked: false, time: "8h" },
+                    task24: { text: "Jeter un coup d'ceil sur les produits utilisés dans la cuisine froide", checked: false, time: "8h" },
+                    task25: { text: "jeter un coup d'œeil rapidement sur les couteaux", checked: false, time: "8h" },
+                    task26: { text: "faire un point avec Raya sur les salades cuisinées qu'il souhaite mettre sur le buffet", checked: false, time: "8h" },
+                    task27: { text: "Fair un tour au boat house -> allumer le feux", checked: false, time: "8h" },
+                    task28: { text: "Interroger charma sur le menu de midiet voir avec Vanessa celui du soir", checked: false, time: "8h" },
+                    task29: { text: "Un tour des produits vite fait", checked: false, time: "8h" },
+                    task30: { text: "Un tour des viandes au congélateur", checked: false, time: "8h" },
+                    task31: { text: "Interroger le chef pâtissier si tout va bien et si il a besoin qu'on lui valide un produit", checked: false, time: "8h" },
+                    task32: { text: "Interroger le pâtissier sur les mises en place anticipées dans la chambre froide", checked: false, time: "8h" },
+                    task33: { text: "Interroger également le patissier sur les desserts de samedi soir -> tout doit être produit vendredi", checked: false, time: "8h" },
+                    task34: { text: "passer avec sanjai à la poissonnerie pour valider les poissons de chabat, les salades du buffet, le cocktail et le BBQ du samedi soir", checked: false, time: "8h" },
+                    task35: { text: "rappeler à la dame qui fait des crêpes qu'elle doit en faire quelques-unes pour shabbat idem pour les gaufres et voir avec David pour les omelettes", checked: false, time: "8h" },
+                    task36: { text: "normalement si il reste des légumes au petit-déjeuner on devrait les ressortir pour le lendemain sinon il faut les préparer sur place à l'extérieur avant de finaliser le petit déjeuner", checked: false, time: "8h" },
+                    task37: { text: "interroger après le petit-déjeuner où se trouve la poêle les pinces de lait (ceci doivent être mis de côté et *pas rapportées à la cuisine*)", checked: false, time: "8h" },
+                    task38: { text: "Faire attention à la préparation du poisson gravelax du samedi matin (ou il est coupé et préparé)", checked: false, time: "8h" },
+                    task39: { text: "Voir avec le boulanger à quel moment il souhaite faire les Halot (normalement autour de 13h)", checked: false, time: "10h45" },
+                    task40: { text: "Tour au boat house", checked: false, time: "10h45" },
+                    task41: { text: "vérifier toutes les salades vertes du jour et de chabat midi et samedi soir", checked: false, time: "10h45" },
+                    task42: { text: "Se renseigner combien d'invités arrivent le jour même et faire envoyer avec le room service une chaussure en chocolat avec un petit mot qui informe que c'est cacher", checked: false, time: "10h45" },
+                    task43: { text: "allumer le barbecue au déjeuner", checked: false, time: "10h45" },
+                    task44: { text: "Passer au boat house et marquer tous les plats qui s'apprêtent à partir au buffet", checked: false, time: "10h45" },
+                    task45: { text: "Voir avec Vanessa si elle a besoin de date ou autre pour la cuisson", checked: false, time: "10h45" },
+                    task46: { text: "Allumer la machine à crêpes pour gouter et vérifier les jus (aucun de la marque CERET n'est cacher)", checked: false, time: "12h15" },
+                    task47: { text: "Faire un nouveau un tour au boat house", checked: false, time: "12h15" },
+                    task48: { text: "Faire un tour à la pâtisserie de la cuisine centrale (reprendre note sur l'avancement des desserts bien les connaître", checked: false, time: "12h15" },
+                    task49: { text: "Mise en place de la synagogue", checked: false, time: "12h15" },
+                    task50: { text: "voir avec richina sur le matériel qu'il a besoin pour les plats de shabbat ça peut être le bol à Bouillon ainsi que le bol à couscous les louches.", checked: false, time: "12h15" },
+                    task51: { text: "Sortir les vins de shabbat (voir avec David ) et sortir jus de raisin", checked: false, time: "12h15" },
+                    task52: { text: "mettre la Bouha au congélateur", checked: false, time: "12h15" },
+                    task53: { text: "Voir avec Vanessa pour la décoration de bougies de Chabbat", checked: false, time: "12h15" },
+                    task54: { text: "anticiper et mettre une petite boîte d'allumettes de côté dans larmoir du sefer tora pour allumer la bougie de la havdala", checked: false, time: "12h15" },
+                    task55: { text: "vérifier la listd des pains du lendemain et demander le timing de production", checked: false, time: "12h15" },
+                    task56: { text: "S'assurer qu'on a du café en poudre", checked: false, time: "12h15" },
+                    task57: { text: "demander à Shanghai de l'eau bouillante a disposition -> Koumkoum--> vendredi soir derrière la salle - samedi matin au petit-déjeuner -et samedi midi à côté de la syna", checked: false, time: "12h15" },
+                    task58: { text: "Voir avec Raya les bols qu'il va utiliser pour la kemia", checked: false, time: "12h15" },
+                    task59: { text: "Contrôler aluminium et papier sur les plaques de cuisson de la boulangerie( rappeler aux équipes de ne pas mélanger les cuissons dans le four)", checked: false, time: "12h15" },
+                    task60: { text: "Faire un tour chambre chocolat ou il prépare aussi quelques de nos desserts", checked: false, time: "12h15" },
+                    task61: { text: "Faire un tour derrière La syna pour s'assurer que notre vaisselle de midi a bien été rangés dans notre storage (petit décompte à vue d'œeil serait idéal)", checked: false, time: "12h15" },
+                    task62: { text: "Tour général au boat house: proposer aide, verif menus", checked: false, time: "15h" },
+                    task63: { text: "cacheriser une armoire chauffante pour garder les plats chauds (très rapidement avec le chalumeau attention en résistance derrière les paroi en aluminium et les caoutchouc)", checked: false, time: "15h" },
+                    task64: { text: "voir avec Shanghai où est-ce qu'il va brancher le Plata (en général dans son bureau )", checked: false, time: "15h" },
+                    task65: { text: "passer et repasser et repasser chez Raya avec la liste du menu de la kemia et faire valider au fur et à mesure", checked: false, time: "15h" },
+                    task66: { text: "demander la liste des desserts du lendemain", checked: false, time: "15h" },
+                    task67: { text: "interroger le pâtissier si certaines mises en place ont déja été faite et où se trouve-t-elle", checked: false, time: "15h" },
+                    task68: { text: "Passer a nouveau dans la cuisine du froid (produit, couteau ,nouveauté...)", checked: false, time: "15h" },
+                    task69: { text: "Voir timings a quand est-ce qu'il est prévu de produire le reste des desserts", checked: false, time: "15h" },
+                    task70: { text: "interroger le room service pour s'assurer qu'ils ont bien envoyé les chaussures en chocolat dans les chambres", checked: false, time: "15h" },
+                    task71: { text: "Petit coup d'oeil dans le four boulanger *(tout les heur si possible)", checked: false, time: "15h" },
+                    task72: { text: "Faire un tour dans la production de sushi que tout se déroule bien dans nos ustensiles", checked: false, time: "15h" },
+                    task73: { text: "Casser des ceufs pour la pâte a crêpes a la pâtisserie centrale Pour dimanche matin", checked: false, time: "15h" },
+                    task74: { text: "revoir avec le pâtissier sur le menu de chaque dessert et les ingrédients (il se peut qu'il y ait de temps a autre que nouveauté)", checked: false, time: "15h" },
+                    task75: { text: "attention à l'occasion -> ne pas hésiter de rendre visite à la pâtisserie non kacher pour voir les productions qu'il mette en place (il se peut que parfois il termine sur notre buffet avec ou sans faire exprès)( surtout qu'ils ont que une journée pour préparer les desserts de midi vendredi soir samedi midi et samedi soir (..)", checked: false, time: "15h" },
+                    task76: { text: "Vérifier de temps a autre il n'est pas de cuisson faite sans que le four ait été allumé", checked: false, time: "15h" },
+                    task77: { text: "Faire un tour à la cuisine du froid pour la mise en place des dernières salades du soir", checked: false, time: "15h" },
+                    task78: { text: "Contrôler la mise en place du dîner: les couverts - les assiettes de dessert, des tasses à café, des petites cuillères, boisson fraîche qui vont être servi, les plats de salade, les pinces et le matériel de service qui va être utilisé dans le couloir, les soupières pour le couscous et pour la sauce, les louches ou cuillère qui vont être utilisées, les salières autorisées pour shabbat, et tout ce que je me rappelle pas qu'il faut faire attention", checked: false, time: "15h" },
+                    task79: { text: "Rallumer po", checked: false, time: "15h" },
+                    task80: { text: "vérifier que les gastro et le matériel de cuisine sont marqués de rouge", checked: false, time: "15h" },
+                    task81: { text: "Attention des fois ils peuvent avoir besoin de mini casseroles ou couteaux à la dernière minute -> a recup à la cuisine centrale", checked: false, time: "15h" },
+                    task82: { text: "interroger Richna sur le lieu exact ou sera fait la vaisselle", checked: false, time: "15h" },
+                    task83: { text: "Après le repas bien ramasser une bouteille de vin ouverte et de prendre avec vous les non mevouchal)", checked: false, time: "15h" }
                 };
-                checklistRef.set(initialData); // Ajoute les exemples à Firebase
+                checklistRef.set(initialData);
             }
         });
 
-        // Initialisation (utilise la liste statique au lieu de Firebase pour l'instant)
-        //displayChecklist(taskList);
-
-        // Gestion des filtres
-        filterAll.addEventListener('change', () => displayChecklist(taskList));
-        filterDone.addEventListener('change', () => displayChecklist(taskList));
-        filterPending.addEventListener('change', () => displayChecklist(taskList));
-
-        timeAll.addEventListener('change', () => displayChecklist(taskList));
-        timeMorning.addEventListener('change', () => displayChecklist(taskList));
-        time8h.addEventListener('change', () => displayChecklist(taskList));
-        time10h45.addEventListener('change', () => displayChecklist(taskList));
-        time12h15.addEventListener('change', () => displayChecklist(taskList));
-        time15h.addEventListener('change', () => displayChecklist(taskList));
-
-
-        // Ajoute la classe 'active' au label sélectionné (pour le style)
+        // Fonction updateActiveFilter et les event listeners pour les filtres (restent les mêmes)
         function updateActiveFilter(filterName) {
             const labels = document.querySelectorAll(`label[for^="${filterName}"]`); // Sélectionne tous les labels dont l'attribut 'for' commence par 'filter'
             labels.forEach(label => label.classList.remove('active')); // Supprime la classe 'active' de tous les labels
@@ -429,7 +373,6 @@
 
          updateActiveFilter('filter');
          updateActiveFilter('time');
-
 
     </script>
 </body>
