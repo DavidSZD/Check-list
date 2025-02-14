@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checklist Partagée - Vendredi</title>
     <style>
-        body {
+         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -490,15 +490,15 @@
             }
 
             tagFiltersElement.innerHTML = `
-                <label for="tag-all" >
-                    <input type="radio" id="tag-all" name="tag-filter" value="all" checked> Tous les tags
+                <label for="tag-all" class="${selectedTagFilterRadio === null ? 'active' : ''}">
+                    <input type="radio" id="tag-all" name="tag-filter" value="all" ${selectedTagFilterRadio === null ? 'checked' : ''}> Tous les tags
                 </label>
             `;
 
             tags.forEach(tag => {
                 const label = document.createElement('label');
                 label.htmlFor = `tag-${tag}`;
-                label.classList.toggle('active', selectedTagFilterRadio === tag); // Add 'active' class if tag is selected
+
                 label.innerHTML = `<input type="radio" id="tag-${tag}" name="tag-filter" value="${tag}" > ${tag}`;
                 tagFiltersElement.appendChild(label);
             });
@@ -513,7 +513,7 @@
                              radio.checked = false; // Deselect the radio
                              selectedTagFilterRadio = null; // Clear the selected tag
                              document.querySelector('#tag-all').checked = true; // Select "All Tags"
-                             updateActiveFilter('tag-filter');
+
                         } else {
                             selectedTagFilterRadio = radio.value; // Update selected tag
                             document.querySelector('#tag-all').checked = false; // Deselect "All Tags" when a specific tag is selected
@@ -523,8 +523,9 @@
                         document.querySelector('#tag-all').checked = true; // Ensure "All Tags" is checked when no tag is selected.
                     }
 
-                    updateActiveFilter('tag-filter');
+
                     displayChecklist(snapshotData);
+                    generateTagFilters(snapshotData); // Regenerate filters to update active class correctly!
                 });
             });
              updateActiveFilter('tag-filter'); // Met à jour la classe active après la génération
