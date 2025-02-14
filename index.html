@@ -94,6 +94,7 @@
             border-bottom: 1px solid #eee;
             display: flex;
             align-items: center;
+            justify-content: space-between; /* Aligne checkbox/label à gauche, tag button à droite */
         }
 
         li:last-child {
@@ -106,6 +107,27 @@
 
         li label {
             flex-grow: 1;
+        }
+
+        li button.tag-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #007bff;
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        li button.tag-button:hover {
+            background-color: #e0f7fa; /* Light hover background */
+        }
+
+        li .task-tags {
+            margin-left: 10px;
+            font-size: 0.8em;
+            color: #777;
         }
 
         .hidden {
@@ -137,6 +159,55 @@
                 margin-right: 0;
             }
         }
+
+        /* Modal styles (optional, for tag input) */
+        .tag-modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        .tag-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 5px;
+        }
+
+        .tag-modal-content input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .tag-modal-content button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tag-modal-content button.save-tag {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .tag-modal-content button.cancel-tag {
+            background-color: #ccc;
+            color: white;
+            margin-left: 10px;
+        }
+
     </style>
 </head>
 <body>
@@ -203,6 +274,17 @@
         </ul>
     </div>
 
+    <!-- The Modal for Tag Input -->
+    <div id="tagInputModal" class="tag-modal">
+        <div class="tag-modal-content">
+            <span class="close-button">×</span>
+            <input type="text" id="tagInputText" placeholder="Entrez un tag">
+            <button class="save-tag" id="saveTagButton">Enregistrer</button>
+            <button class="cancel-tag" id="cancelTagButton">Annuler</button>
+        </div>
+    </div>
+
+
     <!-- Import Firebase SDK (compat pour faciliter la transition) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
@@ -237,6 +319,7 @@
         let app;
         let database;
         let checklistRef;
+        let snapshotData; // Stocke les données globales pour la fonction displayChecklist
 
         try {
             // Initialisation de Firebase
@@ -261,6 +344,14 @@
         const time15h = document.getElementById('time-15h');
         const searchInput = document.getElementById('search-task');
         const tagFiltersElement = document.getElementById('tag-filters');
+
+        const tagInputModal = document.getElementById('tagInputModal');
+        const tagInputText = document.getElementById('tagInputText');
+        const saveTagButton = document.getElementById('saveTagButton');
+        const cancelTagButton = document.getElementById('cancelTagButton');
+
+
+        let currentTaskKeyForTagging = null; // Variable pour stocker la clé de la tâche à tagger
 
 
         function displayChecklist(data) {
@@ -328,8 +419,30 @@
                     label.htmlFor = key;
                     label.textContent = fixCharacters(item.text);
 
-                    listItem.appendChild(checkbox);
-                    listItem.appendChild(label);
+                    const tagButton = document.createElement('button');
+                    tagButton.classList.add('tag-button');
+                    tagButton.textContent = 'Tag';
+                    tagButton.addEventListener('click', () => {
+                        currentTaskKeyForTagging = key; // Stocke la clé de la tâche actuelle
+                        tagInputModal.style.display = "block"; // Affiche le modal
+                        tagInputText.value = ""; // Réinitialise le champ de texte
+                        tagInputText.focus(); // Focus sur l'input
+                    });
+
+                    const taskTagsSpan = document.createElement('span');
+                    taskTagsSpan.classList.add('task-tags');
+                    taskTagsSpan.textContent = item.tags ? item.tags.join(', ') : ''; // Affiche les tags s'il y en a
+
+                    const taskContent = document.createElement('div'); // Div pour grouper checkbox et label à gauche
+                    taskContent.style.display = 'flex';
+                    taskContent.style.alignItems = 'center';
+                    taskContent.appendChild(checkbox);
+                    taskContent.appendChild(label);
+
+
+                    listItem.appendChild(taskContent);
+                    listItem.appendChild(taskTagsSpan); // Affiche les tags à côté du bouton Tag
+                    listItem.appendChild(tagButton); // Ajoute le bouton Tag à droite
                     checklistElement.appendChild(listItem);
                 }
             }
@@ -361,7 +474,7 @@
             document.querySelectorAll('input[name="tag-filter"]').forEach(radio => {
                 radio.addEventListener('change', () => {
                     updateActiveFilter('tag-filter');
-                    displayChecklist(snapshot.val()); // Réaffiche la checklist après changement de filtre tag
+                    displayChecklist(snapshotData); // Réaffiche la checklist après changement de filtre tag
                 });
             });
         }
@@ -521,6 +634,38 @@
         // Écoute les changements dans la barre de recherche
         searchInput.addEventListener('input', () => {
             displayChecklist(snapshotData);
+        });
+
+
+        // Modal interaction
+        const closeModalButtons = document.querySelectorAll('.close-button, #cancelTagButton');
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tagInputModal.style.display = "none";
+            });
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == tagInputModal) {
+                tagInputModal.style.display = "none";
+            }
+        });
+
+        saveTagButton.addEventListener('click', () => {
+            const tagText = tagInputText.value.trim();
+            if (tagText && currentTaskKeyForTagging) {
+                const tagArray = tagText.split(',').map(tag => tag.trim()).filter(tag => tag !== ''); // Permet d'ajouter plusieurs tags séparés par des virgules
+
+                checklistRef.child(currentTaskKeyForTagging).child('tags').set(tagArray).then(() => {
+                    tagInputModal.style.display = "none";
+                    currentTaskKeyForTagging = null; // Réinitialise la clé de tâche
+                }).catch(error => {
+                    console.error("Erreur lors de la sauvegarde du tag:", error);
+                    alert("Erreur lors de la sauvegarde du tag.");
+                });
+            } else {
+                alert("Veuillez entrer un tag.");
+            }
         });
 
 
