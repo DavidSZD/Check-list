@@ -30,6 +30,28 @@
             border-radius: 5px;
         }
 
+        .search-bar-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar-section label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .search-bar-section input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+
         .filter-section {
             margin-bottom: 20px;
             padding: 10px;
@@ -117,6 +139,16 @@
             .filters label {
                 margin-bottom: 10px;
             }
+
+            .search-bar-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-bar-section label {
+                margin-bottom: 5px;
+                margin-right: 0;
+            }
         }
     </style>
 </head>
@@ -124,6 +156,12 @@
     <h1>Checklist Partagée - Vendredi</h1>
 
     <div class="container">
+
+        <div class="search-bar-section">
+            <label for="search-task">Rechercher une tâche:</label>
+            <input type="text" id="search-task" placeholder="Mot-clé...">
+        </div>
+
         <div class="filter-section">
             <h2>État des tâches</h2>
             <div class="filters">
@@ -224,19 +262,23 @@
         const time10h45 = document.getElementById('time-10h45');
         const time12h15 = document.getElementById('time-12h15');
         const time15h = document.getElementById('time-15h');
+        const searchInput = document.getElementById('search-task');
 
 
         function displayChecklist(data) {
             checklistElement.innerHTML = '';
             const filter = document.querySelector('input[name="filter"]:checked').value;
             const timeFilter = document.querySelector('input[name="time"]:checked').value;
+            const searchTerm = searchInput.value.toLowerCase(); // Récupère le terme de recherche et le met en minuscule
 
             console.log("Filtre d'état sélectionné:", filter);
             console.log("Filtre horaire sélectionné:", timeFilter);
+            console.log("Terme de recherche:", searchTerm);
 
             for (const key in data) {
                 if (data.hasOwnProperty(key)) {
                     const item = data[key];
+                    const taskTextLower = item.text.toLowerCase(); // Met le texte de la tâche en minuscule pour la recherche insensible à la casse
 
                     console.log("Tâche:", key, item);
 
@@ -255,6 +297,13 @@
                         console.log("Filtrage - Horaire incorrect, filtre horaire actif. Masquer:", key);
                         continue;
                     }
+
+                    // Filtrage par recherche
+                    if (searchTerm && !taskTextLower.includes(searchTerm)) { // Vérifie si un terme de recherche est entré et si le texte de la tâche ne le contient pas
+                        console.log("Filtrage - Terme de recherche non trouvé. Masquer:", key);
+                        continue;
+                    }
+
 
                     const listItem = document.createElement('li');
                     const checkbox = document.createElement('input');
@@ -415,6 +464,11 @@
             if (data) {
                 displayChecklist(data);
             }
+        });
+
+        // Écoute les changements dans la barre de recherche
+        searchInput.addEventListener('input', () => {
+            displayChecklist(snapshot.val()); // Réaffiche la checklist à chaque frappe dans la barre de recherche
         });
 
 
