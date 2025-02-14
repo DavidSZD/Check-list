@@ -113,6 +113,7 @@
             display: flex;
             gap: 5px;
             margin-left: 10px;
+            align-items: center; /* Align items vertically in the center */
         }
 
         li .tag {
@@ -121,7 +122,24 @@
             padding: 4px 8px;
             border-radius: 15px;
             font-size: 0.8em;
+            display: flex; /* Use flexbox for tag */
+            align-items: center; /* Center items vertically */
+            gap: 5px; /* Space between tag text and delete button */
         }
+        li .tag .delete-tag-button {
+            background: none;
+            border: none;
+            color: #777;
+            cursor: pointer;
+            font-size: 0.8em;
+            padding: 0;
+            line-height: 1; /* Adjust line-height to center vertically */
+        }
+
+        li .tag .delete-tag-button:hover {
+            color: #555;
+        }
+
 
         li .add-tag-button, li .save-tag-button {
             background-color: #007bff;
@@ -305,6 +323,7 @@
         const time15h = document.getElementById('time-15h');
         const searchInput = document.getElementById('search-task');
         const tagFiltersElement = document.getElementById('tag-filters');
+        let selectedTagFilterRadio = null; // Track the currently selected tag filter radio
 
 
         function displayChecklist(data) {
@@ -377,10 +396,20 @@
                         item.tags.forEach(tag => {
                             const tagElement = document.createElement('span');
                             tagElement.classList.add('tag');
-                            tagElement.textContent = tag;
+                            tagElement.innerHTML = `${tag} <button class="delete-tag-button" data-task-key="${key}" data-tag="${tag}">x</button>`; // Add delete button to each tag
                             tagsContainer.appendChild(tagElement);
                         });
                     }
+
+                    // Event delegation for delete tag buttons
+                    tagsContainer.addEventListener('click', function(event) {
+                        if (event.target.classList.contains('delete-tag-button')) {
+                            const tagToDelete = event.target.dataset.tag;
+                            const taskKey = event.target.dataset.taskKey;
+                            deleteTag(taskKey, tagToDelete);
+                        }
+                    });
+
 
                     const addTagButton = document.createElement('button');
                     addTagButton.classList.add('add-tag-button');
@@ -433,6 +462,24 @@
             }
         }
 
+        function deleteTag(taskKey, tagToDelete) {
+            checklistRef.child(taskKey).child('tags').transaction(currentTags => {
+                if (currentTags) {
+                    return currentTags.filter(tag => tag !== tagToDelete);
+                }
+                return currentTags; // If no tags exist, return as is.
+            }, function(error, committed, snapshot) {
+                if (error) {
+                    console.error('Transaction failed abnormally!', error);
+                } else if (!committed) {
+                    console.log('Transaction aborted.');
+                } else {
+                    console.log('Tag deleted!');
+                }
+            });
+        }
+
+
         // Fonction pour générer les boutons de tags
         function generateTagFilters(data) {
             const tags = new Set();
@@ -443,22 +490,37 @@
             }
 
             tagFiltersElement.innerHTML = `
-                <label for="tag-all">
-                    <input type="radio" id="tag-all" name="tag-filter" value="all" checked> Tous les tags
+                <label for="tag-all" class="${selectedTagFilterRadio === null ? 'active' : ''}">
+                    <input type="radio" id="tag-all" name="tag-filter" value="all" ${selectedTagFilterRadio === null ? 'checked' : ''}> Tous les tags
                 </label>
             `;
 
             tags.forEach(tag => {
                 const label = document.createElement('label');
                 label.htmlFor = `tag-${tag}`;
-                label.innerHTML = `<input type="radio" id="tag-${tag}" name="tag-filter" value="${tag}"> ${tag}`;
+                label.innerHTML = `<input type="radio" id="tag-${tag}" name="tag-filter" value="${tag}" ${selectedTagFilterRadio === tag ? 'checked' : ''}> ${tag}`;
                 tagFiltersElement.appendChild(label);
             });
+
 
              // Ajoute les event listeners pour les nouveaux boutons de tag (après régénération des boutons)
             document.querySelectorAll('input[name="tag-filter"]').forEach(radio => {
                 radio.addEventListener('change', () => {
                     updateActiveFilter('tag-filter');
+                    if (radio.checked) {
+                        if (selectedTagFilterRadio === radio.value) {
+                             radio.checked = false; // Deselect the radio
+                             selectedTagFilterRadio = null; // Clear the selected tag
+                             document.querySelector('#tag-all').checked = true; // Select "All Tags"
+                             updateActiveFilter('tag-filter'); // Update active class for filters
+                        } else {
+                            selectedTagFilterRadio = radio.value; // Update selected tag
+                        }
+                    } else {
+                        selectedTagFilterRadio = null; // Clear selected tag if deselected directly (though radio should not be deselected directly normally)
+                    }
+                    document.querySelector('#tag-all').checked = (selectedTagFilterRadio === null || selectedTagFilterRadio === 'all'); // Ensure "All Tags" is checked when no tag is selected.
+                    updateActiveFilter('tag-filter'); // Update active class for filters after potentially changing "All Tags"
                     displayChecklist(snapshotData);
                 });
             });
@@ -594,17 +656,10 @@
             });
         });
 
-        document.querySelectorAll('input[name="tag-filter"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                updateActiveFilter('tag-filter');
-                displayChecklist(snapshotData);
-            });
-        });
 
 
          updateActiveFilter('filter');
          updateActiveFilter('time');
-         updateActiveFilter('tag-filter');
 
 
         let snapshotData; // Variable pour stocker le snapshot Firebase en dehors du listener
